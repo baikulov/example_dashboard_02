@@ -13,7 +13,7 @@ cohorts <- function(x){
   
   # считаем дату первого заказа для каждого клиента
   first_date <- orders %>%
-                          subset(order_date >= '2016-01-01') %>%
+                          subset(order_date >= '2020-01-01') %>%
                           group_by(customer_id) %>%
                           arrange(order_date) %>%
                           mutate(first_date = min(order_date))
