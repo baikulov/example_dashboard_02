@@ -1,9 +1,10 @@
-# подключаем библиотеку
-library('dplyr')
-library('tidyr')
-
 cohorts <- function(x){
-
+  
+  # подключаем библиотеку
+  library('dplyr')
+  library('tidyr')
+  library('lubridate')
+    
   #читаем файл c данными
   orders <- read.csv(x)
   
@@ -12,6 +13,7 @@ cohorts <- function(x){
   
   # считаем дату первого заказа для каждого клиента
   first_date <- orders %>%
+                          subset(order_date >= '2016-01-01') %>%
                           group_by(customer_id) %>%
                           arrange(order_date) %>%
                           mutate(first_date = min(order_date))
@@ -48,7 +50,7 @@ cohorts <- function(x){
     summarise(n = n_distinct(customer_id))  %>%
     group_by(first_month) %>%
     arrange(first_month, month_returned) %>%
-    mutate(n2 = round(n / first(n, 1, month_returned), 3) * 100) %>%
+    mutate(n2 = round(n / first(n, 1, month_returned), 3)) %>%
     ungroup()
   
   
@@ -63,5 +65,7 @@ cohorts <- function(x){
 
 }
 
-# используем функцию и считаем когорту
-final <- cohorts('example_02.csv')
+system.time(
+  # используем функцию и считаем когорту
+  final <- cohorts('example_02.csv')
+)
