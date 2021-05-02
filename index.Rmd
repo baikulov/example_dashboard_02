@@ -1,5 +1,5 @@
 ---
-title: "Когортный анализ"
+title: "Example_02"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
