@@ -1,0 +1,72 @@
+---
+title: "Когортный анализ"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(echarts4r)
+library(DT)
+# подключаем функцию с расчётом когорты
+source('cohorts_count.R')
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Когорты
+
+```{r}
+# Creating 19 breaks and 20 rgb color values ranging from blue to white
+breaks <- quantile(final[,3:12], probs = seq(.05, .95, .05), na.rm = TRUE)
+colors <- sapply(round(seq(155, 80, length.out = length(breaks) + 1), 0),
+                 function(x){ rgb(x,x,155, maxColorValue = 155) } )
+
+
+
+# The retention rate mixpanel
+datatable(final,
+              class = 'cell-border stripe',
+             rownames = FALSE,
+             options = list(
+               ordering = FALSE,
+               dom = 't',
+               pageLength = 13)) %>% formatStyle("0",
+               backgroundColor = 'lightgrey',
+               fontWeight = 'bold')  %>%
+  formatPercentage(c(2:12), 2) %>%
+  formatStyle(names(final[c(-1,-2)]),color = 'black', backgroundColor = styleInterval(breaks,colors))
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Динамика когорты по месяцам
+
+```{r}
+
+final %>% 
+  e_charts(first_month) %>%
+  e_area(1)%>%
+  e_area(2)%>%
+  e_area(3)%>%
+  e_area(4)%>%
+  e_area(5)%>%
+  e_area(6)%>%
+  e_labels()
+```
+
+### График
+
+```{r}
+
+final %>% 
+  e_charts(first_month) %>%
+  e_bar(1) %>%
+  e_labels()
+```
+
