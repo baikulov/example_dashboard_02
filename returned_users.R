@@ -1,4 +1,4 @@
-cohorts <- function(x){
+returned_users <- function(x){
   
   # подключаем библиотеку
   library('dplyr')
@@ -13,10 +13,10 @@ cohorts <- function(x){
   
   # считаем дату первого заказа для каждого клиента
   first_date <- orders %>%
-                          subset(order_date >= '2020-01-01') %>%
-                          group_by(customer_id) %>%
-                          arrange(order_date) %>%
-                          mutate(first_date = min(order_date))
+    subset(order_date >= '2020-01-01') %>%
+    group_by(customer_id) %>%
+    arrange(order_date) %>%
+    mutate(first_date = min(order_date))
   
   # функция для высчитывания первого дня месяца
   monthStart <- function(x) {
@@ -46,21 +46,9 @@ cohorts <- function(x){
   # считаем когорты? кол-во клиентов и отношение к месяцу первого заказа
   cohorts <- first_date %>%
     subset(order_date <= limit)  %>%
-    group_by(first_month, month_returned) %>%
-    summarise(n = n_distinct(customer_id))  %>%
-    group_by(first_month) %>%
-    arrange(first_month, month_returned) %>%
-    mutate(n2 = round(n / first(n, 1, month_returned), 3)) %>%
-    ungroup()
+    group_by(month_returned) %>%
+    summarise(n = n_distinct(customer_id))
   
-  
-  # финализируем таблицу с разбивкой по месяцам
-  final <- cohorts  %>%
-    pivot_wider(
-      id_cols = 'first_month',
-      names_from = 'month_returned',
-      names_sort = TRUE,
-      values_from = 'n2'
-      )
-
 }
+
+final2 <- returned_users('example_02.csv')

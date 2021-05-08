@@ -1,20 +1,135 @@
 ---
-title: "Example_02"
+title: "Когортный анализ"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: rows
+    vertical_layout: scroll
+    
 ---
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
 library(echarts4r)
 library(DT)
+
+# указываем адрес файла
+file <- 'example_02.csv'
+
 # подключаем функцию с расчётом когорты
 source('cohorts_count.R')
+final <- cohorts(file)
+
+# подключаем функцию с расчётом вернувшихся юзеров
+source('returned_users.R')
+final2 <- returned_users(file)
+
 ```
 
-Column {data-width=650}
+Row
+-----------------------------------------------------------------------
+
+### Всего клиентов
+
+```{r}
+total <- final2 %>% summarise(total = sum(n))
+
+valueBox(total$total, icon = "fa-pencil")
+
+```
+
+### Доля клиентов с повторным заказом
+
+```{r}
+returned <- final2 %>%
+  filter(month_returned != 0) %>%
+  summarise(total = sum(n))
+
+returned_percent <- round(returned$total / total$total * 100, 2)
+
+valueBox(paste0(returned_percent,"%"), icon = "fa-cart-plus")
+
+```
+
+### Основные метрики
+
+```{r}
+
+valueBox(final2$n[1], icon = "fa-pencil")
+
+```
+
+### Основные метрики
+
+```{r}
+
+valueBox(final2$n[1], icon = "fa-pencil")
+
+```
+
+### Основные метрики
+
+```{r}
+
+valueBox(final2$n[1], icon = "fa-pencil")
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+
+### Доля повторных заказов с разбивкой и динамикой по месяцам
+
+```{r}
+avg <- list(
+  type = "average",
+  name = "AVG",
+  label = list(formatter = "AVG {@1}%"),
+  lineStyle = list(color = '#4d4d4d')
+)
+
+plots <- final
+
+plots[,'1'] <- plots[,'1'] * 100
+plots[,'2'] <- plots[,'2'] * 100
+plots[,'3'] <- plots[,'3'] * 100
+plots[,'4'] <- plots[,'4'] * 100
+plots[,'5'] <- plots[,'5'] * 100
+
+plots %>% 
+  e_charts(first_month) %>%
+  e_bar(1) %>%
+  e_bar(2) %>%
+  e_bar(3) %>%
+  e_bar(4) %>%
+  e_bar(5) %>%
+  e_bar(6) %>%
+  e_tooltip((trigger = "axis")) %>%
+  e_mark_line(data = avg)%>%
+  e_y_axis(formatter = "{value}%")%>%
+  e_labels(formatter = "{@1}%") %>%
+  e_legend(selectedMode = "single") %>%
+  e_title(text = "Repeat purchase", subtext = "Динамика показателя по месяцам")
+```
+> *Мы наблюдаем резкое падение повторных заказов в январе 2021 г.
+
+### Динамика когорты по месяцам {data-width=300}
+
+```{r}
+final2$month_returned <- as.character(final2$month_returned)
+
+final2 %>% 
+  e_charts(month_returned) %>% 
+  e_pie(n, radius = c("40%", "70%"))  %>%
+  e_labels(show = TRUE,
+           formatter = "{d}%",
+           position = "inside") %>%
+  e_legend() %>%
+  e_tooltip()
+```
+> *Доля повторных заказов составляет 22,8% от общего числа заказов за период
+
+Row {.tabset .tabset-fade, data-height=600}  
 -----------------------------------------------------------------------
 
 ### Когорты
@@ -41,32 +156,3 @@ datatable(final,
   formatStyle(names(final[c(-1,-2)]),color = 'black', backgroundColor = styleInterval(breaks,colors))
 
 ```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Динамика когорты по месяцам
-
-```{r}
-
-final %>% 
-  e_charts(first_month) %>%
-  e_area(1)%>%
-  e_area(2)%>%
-  e_area(3)%>%
-  e_area(4)%>%
-  e_area(5)%>%
-  e_area(6)%>%
-  e_labels()
-```
-
-### График
-
-```{r}
-
-final %>% 
-  e_charts(first_month) %>%
-  e_bar(1) %>%
-  e_labels()
-```
-
